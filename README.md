@@ -193,7 +193,7 @@ const SHEET_NAME = 'Attendance';
 
 ## 🔐 Authentication Setup (IMPORTANT ⚠️)
 
-This project uses **Firebase Authentication**, so demo login may **NOT work**.
+This project uses **Firebase Authentication**.
 
 ---
 
@@ -262,6 +262,7 @@ role: "admin"
 ## 👨‍💻 Author
 
 **A. K. M Shamimul Islam**
+
 💡 Passionate about building real-world systems
 
 ---

@@ -263,8 +263,6 @@ role: "admin"
 
 **A. K. M Shamimul Islam**
 
-💡 Passionate about building real-world systems
-
 ---
 
 ## ⭐ Final Note

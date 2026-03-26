@@ -1,26 +1,17 @@
-### ✨Task Management & Employee Analytics System
+### ✨ Knowledge Team Dashboard: Task Management & Employee Analytics
 
 ![Vibe Coding](https://img.shields.io/badge/Vibe%20Coding-Project-purple?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
-![Tech](https://img.shields.io/badge/Built%20With-HTML%20%7C%20CSS%20%7C%20JS-blue?style=for-the-badge)
+![Tech](https://img.shields.io/badge/Built%20With-HTML%20%7C%20CSS%20%7C%20JS%20%7C%20Firebase-blue?style=for-the-badge)
+![Integration](https://img.shields.io/badge/Integration-Python%20%7C%20ZKTeco-green?style=for-the-badge)
 
 ---
 
 ## 🚀 About the Project
 
-The **Knowledge Team Dashboard** is a complete **task management and employee monitoring system** designed to manage teams, track productivity, and streamline workflows — all in one place.
+The **Knowledge Team Dashboard** is a comprehensive **task management and employee analytics system** designed to streamline team workflows, track productivity, and manage attendance and leave records — all in one centralized platform.
 
-This is a **vibe coding project**, built with creativity, consistency, and real-world problem solving.
-
-It combines:
-
-- 📋 Task Management  
-- 👥 Employee Tracking  
-- 📊 Performance Analytics  
-- 🏖️ Leave Management  
-- 🔔 Notification System  
-
-into a single powerful dashboard.
+This system is built for efficiency, featuring real-time data synchronization between a web-based dashboard and a Google Sheets backend, with automated attendance integration from biometric devices.
 
 ---
 
@@ -34,206 +25,45 @@ into a single powerful dashboard.
 
 ---
 
-## 📅 Project Timeline
-
-- 🟢 **Started:** December 2, 2025  
-- 🔵 **Completed:** January 26, 2026  
-
----
-
 ## ⚡ Core Features
 
-### 🔐 Authentication & Role System
-- Login & Signup system  
-- Firebase Authentication  
-- Role-based access:
-  - 👑 Admin  
-  - 👨‍💻 Employee  
+### 📋 Task Management & Delegation
+- **Role-Based Access:** Admins and Team Leaders can assign and manage tasks.
+- **Priority & Deadlines:** Set task urgency (Low/Medium/High) and track due dates.
+- **Task History:** Full audit trail for every task, tracking status changes and reassignments.
+- **Status Tracking:** Real-time updates for Pending, In Progress, Completed, and Overdue tasks.
 
----
+### ⏱️ Automated Attendance System
+- **Biometric Integration:** Attendance logs are fetched from ZKTeco devices via a Python sync script.
+- **Google Sheets Backend:** All records are stored and calculated in Google Sheets for transparency.
+- **Work Hour Analytics:** Automatic calculation of total daily and monthly work hours.
 
-### 📋 Task Management
-- Assign tasks with:
-  - Priority (Low / Medium / High)  
-  - Due dates  
-- Track task status:
-  - ⏳ Pending  
-  - 🚧 In Progress  
-  - ✅ Completed  
-  - 🔥 Overdue  
-
----
-
-### 📊 Smart Dashboard
-- Real-time analytics  
-- Work hour tracking  
-- Task performance overview  
-- Auto-refresh system  
-
----
-
-### 👥 Team Management
-- Multi-team support (Math, ICT, Physics, etc.)  
-- Admin can manage users and roles  
-
----
-
-### ⏱️ Attendance System
-- Daily check-in/check-out tracking  
-- Total hours calculation  
-- Filters:
-  - Year  
-  - Month  
-  - Day  
-
----
+### 📊 Advanced Analytics & Reporting
+- **Team Task Summary:** High-level overview of task distribution across different departments (Math, ICT, Physics, etc.).
+- **Employee Dashboards:** Personalized views for employees to track their own tasks, attendance, and leave.
+- **Excel Export:** Download task lists and leave history directly to `.xlsx` format for offline reporting.
 
 ### 🏖️ Leave Management
-- Annual Leave  
-- Casual Leave  
-- Sick Leave  
-- Work From Home  
-
----
+- **Quota Tracking:** Real-time balance for Annual, Casual, and Sick leaves.
+- **History Logs:** Detailed records of approved leave dates and durations.
 
 ### 🔔 Notification System
-- Admin approval requests  
-- Notification center  
-- Real-time updates  
+- **Real-Time Alerts:** Notifications for new task assignments, task completions, and overdue warnings.
+- **Admin Approval Center:** Centralized view for managing team requests.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **HTML5** – Structure  
-- **CSS3** – Styling & UI  
-- **JavaScript (Vanilla JS)** – Logic & Interactivity  
-- **Firebase** – Authentication & Database  
-- **Google Sheets API** – Data source  
+### Frontend
+- **HTML5 & CSS3:** Responsive UI with custom styling and consistent components.
+- **Vanilla JavaScript:** Modular logic for data processing and DOM manipulation.
+- **Firebase (Compat v8):** Authentication and Firestore for task and user management.
+- **SheetJS (XLSX):** Client-side Excel generation.
 
----
-
-## 📦 How to Run
-
-```bash
-# Clone the repository
-git clone https://github.com/akmshamimulislam/Task-Management-Employee-Analytics-System
-
-# Open project folder
-cd your-repo
-
-# Run
-Open index.html in your browser
-````
-
----
-
-## ⚙️ Required Configuration (IMPORTANT ⚠️)
-
-Before running this project, you **MUST update the configuration values**, otherwise the system will **NOT work properly**.
-
----
-
-### 🔥 1. Firebase Configuration
-
-Find this inside your code:
-
-```js
-const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_apiKey",
-  authDomain: "YOUR_FIREBASE_authDomain",
-  projectId: "YOUR_FIREBASE_projectId",
-  storageBucket: "YOUR_FIREBASE_storageBucket",
-  messagingSenderId: "YOUR_FIREBASE_messagingSenderId",
-  appId: "YOUR_FIREBASE_appId"
-};
-```
-
-### ✅ Replace with your real Firebase credentials
-
-👉 Get from:
-Firebase Console → Project Settings → Your Apps
-
----
-
-### 🔥 2. Google Sheet Configuration
-
-Find this:
-
-```js
-const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID';
-const SHEET_NAME = 'YOUR_SHEET_NAME';
-```
-
-### ✅ Replace with your values
-
-* **SHEET_ID** → from Google Sheet URL
-* **SHEET_NAME** → your sheet tab name
-
-Example:
-
-```js
-const SHEET_ID = '1AbCdEfGhIjKlMnOpQrStUvWxYz';
-const SHEET_NAME = 'Attendance';
-```
-
----
-
-### ⚠️ Important Notes
-
-* Google Sheet must be **public or accessible**
-* Firebase must be properly configured
-* Otherwise:
-
-  * ❌ Login won’t work
-  * ❌ Data won’t load
-  * ❌ Dashboard will be empty
-
----
-
-## 🔐 Authentication Setup (IMPORTANT ⚠️)
-
-This project uses **Firebase Authentication**.
-
----
-
-### 🧾 How to Use
-
-1. Open the project
-2. Go to **Sign Up**
-3. Enter:
-
-   * Name
-   * Employee ID
-   * Email
-   * Password
-   * Team
-4. Click **Create Account**
-
----
-
-### 🔑 Login
-
-* Use your created email & password
-* You will log in as **Employee**
-
----
-
-### 👑 Make Yourself Admin
-
-Go to Firebase → Firestore Database → Users collection
-
-Change:
-
-```js
-role: "employee"
-```
-
-To:
-
-```js
-role: "admin"
-```
+### Backend & Integration
+- **Google Sheets API:** Primary data source for attendance and leave records.
+- **Python (Sync Script):** Integrated via `pyzk` and `pandas` to bridge biometric hardware with the cloud.
 
 ---
 
@@ -241,21 +71,39 @@ role: "admin"
 
 ```
 📁 project/
- ├── index.html
- ├── dashboard.png
- ├── employee.png
- └── README.md
+ ├── index.html          # Main application entry point
+ ├── css/
+ │   └── style.css       # Core application styling
+ ├── js/
+ │   └── script.js       # Business logic and Firebase integration
+ ├── zkteco_sync.py      # Attendance synchronization script (Python)
+ ├── dashboard.png       # UI Screenshot
+ ├── employee.png        # UI Screenshot
+ └── README.md           # Project documentation
 ```
 
 ---
 
-## 🧠 Learning Outcomes
+## ⚙️ Configuration & Setup
 
-* Real-world system design
-* Role-based architecture
-* Advanced DOM manipulation
-* UI/UX design thinking
-* Problem-solving mindset
+### 1. Web Application
+- **Firebase:** Update `firebaseConfig` in `js/script.js` with your Project credentials.
+- **Google Sheets:** Set your `SHEET_ID` and `SHEET_NAME` in `js/script.js`.
+
+### 2. Biometric Sync (Python)
+Ensure you have the following libraries installed:
+```bash
+pip install pyzk pandas google-auth google-api-python-client
+```
+Configure your ZKTeco device IP and Google API credentials within `zkteco_sync.py`.
+
+---
+
+## 🧠 Technical Highlights
+
+- **Robust Data Parsing:** Uses a custom `parseTotalHours` utility to handle complex Google Sheets duration strings, preventing common year/hour misparsing issues.
+- **Consistent UI State:** Implements a standard `.no-data` pattern across all task grids and lists for a polished user experience during empty states.
+- **Optimized Performance:** Features an auto-refresh system (5-minute intervals) and real-time Firestore listeners for instant updates.
 
 ---
 
@@ -265,10 +113,4 @@ role: "admin"
 
 ---
 
-## ⭐ Final Note
-
-> This is not just a project —
-> this is a complete system built from scratch with logic, consistency, and vibe.
-
 🚀 *“From idea → execution → full product.”*
-

@@ -22,6 +22,11 @@
         let editingTaskId = null;
         let dashboardTaskFilter = 'all'; // NEW: Track dashboard task filter
 
+        // Check and apply theme on load
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
         const LEAVE_QUOTAS = {
             'Annual Leave': 15,
             'Casual Leave': 10,
@@ -192,8 +197,12 @@
 
                         // Initialize Task Management
                         subscribeToTasks();
+                        subscribeToAnnouncements();
                         // Load all users for everyone to support Team Lead badges in UI
                         loadAllUsers();
+
+                        // Check for deadlines after tasks are loaded
+                        setTimeout(checkUserDeadlines, 2000);
                     } else {
                         showAuthMessage('User profile not found in database.');
                         await auth.signOut();
@@ -241,6 +250,7 @@
             document.getElementById('headerNotificationBtn').style.display = 'block'; // Always show
             document.getElementById('adminTaskBtn').style.display = (isAdmin || isTeamLeader) ? 'block' : 'none';
             document.getElementById('adminUsersBtn').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('adminAnnounceBtn').style.display = (isAdmin || isTeamLeader) ? 'block' : 'none';
             document.getElementById('adminTeamSummary').style.display = (isAdmin || isTeamLeader) ? 'block' : 'none'; // Show for Admin/TL
             document.getElementById('dashboardTaskStats').style.display = isAdmin ? 'grid' : 'none'; // NEW: Admin only
         }
@@ -439,6 +449,96 @@
             if (view.style.display === 'block') loadUserManagementHelper();
         }
 
+        function renderEmployeePerformance() {
+            const tbody = document.getElementById('performanceTableBody');
+            if (!tbody) return;
+
+            const tasks = window.globalTasks || [];
+            const users = allUsers || [];
+            const today = new Date().toISOString().split('T')[0];
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users loaded.</td></tr>';
+                return;
+            }
+
+            const data = users.map(u => {
+                const userTasks = tasks.filter(t => t.assigneeId === u.id);
+                const total = userTasks.length;
+                if (total === 0) return { name: u.name, team: u.team, total: 0, completion: 0, overdue: 0, speed: 0, score: 0 };
+
+                const completed = userTasks.filter(t => t.status === 'completed');
+                const completedCount = completed.length;
+                const overdue = userTasks.filter(t => {
+                    if (!t.dueDate) return false;
+                    if (t.status !== 'completed' && t.dueDate < today) return true;
+                    if (t.status === 'completed') {
+                        let doneDateStr = '';
+                        if (t.completedAt?.toDate) doneDateStr = t.completedAt.toDate().toISOString().split('T')[0];
+                        else if (t.updatedAt?.toDate) doneDateStr = t.updatedAt.toDate().toISOString().split('T')[0];
+                        return doneDateStr && doneDateStr > t.dueDate;
+                    }
+                    return false;
+                }).length;
+
+                // Speed in days
+                let totalDays = 0;
+                let timedTasks = 0;
+                completed.forEach(t => {
+                    if (t.completedAt && t.createdAt) {
+                        const start = t.createdAt.toDate ? t.createdAt.toDate() : new Date(t.createdAt.seconds * 1000);
+                        const end = t.completedAt.toDate ? t.completedAt.toDate() : new Date(t.completedAt.seconds * 1000);
+                        totalDays += (end - start) / (1000 * 60 * 60 * 24);
+                        timedTasks++;
+                    }
+                });
+
+                const completionRate = (completedCount / total) * 100;
+                const avgSpeed = timedTasks > 0 ? (totalDays / timedTasks).toFixed(1) : 'N/A';
+
+                // Simple score formula: (Completion% * 0.7) - (OverdueCount * 5) + (100 - speedDays*2) - Cap at 0-100
+                let score = (completionRate * 0.8) - (overdue * 2);
+                if (avgSpeed !== 'N/A') score -= (parseFloat(avgSpeed) * 0.5);
+                score = Math.max(0, Math.min(100, score)).toFixed(0);
+
+                return {
+                    name: u.name, team: u.team, total,
+                    completion: completionRate.toFixed(0),
+                    overdue, speed: avgSpeed, score
+                };
+            });
+
+            // Sort by score
+            data.sort((a, b) => b.score - a.score);
+
+            tbody.innerHTML = data.map(d => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 12px 10px;">
+                        <div style="font-weight:700; color:#334155;">${d.name}</div>
+                        <div style="font-size:10px; color:#64748b;">${d.team || 'No Team'}</div>
+                    </td>
+                    <td>${d.total}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:50px; height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                                <div style="width:${d.completion}%; height:100%; background:#10b981;"></div>
+                            </div>
+                            <span>${d.completion}%</span>
+                        </div>
+                    </td>
+                    <td style="color:${d.overdue > 0 ? '#ef4444' : '#64748b'}; font-weight:${d.overdue > 0 ? '700' : '400'};">${d.overdue}</td>
+                    <td>${d.speed}</td>
+                    <td>
+                        <span style="background:${d.score > 80 ? '#dcfce7' : (d.score > 50 ? '#fef3c7' : '#fee2e2')};
+                                     color:${d.score > 80 ? '#16a34a' : (d.score > 50 ? '#d97706' : '#dc2626')};
+                                     padding:4px 10px; border-radius:12px; font-weight:700;">
+                            ${d.score}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
         async function loadUserManagementHelper() {
             try {
                 const snapshot = await db.collection('users').orderBy('name').get();
@@ -510,7 +610,16 @@
         function populateAssigneeDropdown() {
             // Filter Assignees based on Role
             const select = document.getElementById('taskAssignee');
-            let options = '<option value="">Select Assignee</option>';
+            const isBulk = document.getElementById('bulkAssignCheck').checked;
+
+            let options = isBulk ? '<option value="">Select Team</option>' : '<option value="">Select Assignee</option>';
+
+            if (isBulk) {
+                // Show Teams instead of Individuals
+                options += TEAMS.map(t => `<option value="team_${t}">👥 ${t} Team</option>`).join('');
+                select.innerHTML = options;
+                return;
+            }
 
             let eligibleUsers = [];
 
@@ -559,6 +668,17 @@
                 return;
             }
 
+            // Show Bulk toggle for Admin/TL
+            const bulkGroup = document.getElementById('bulkAssignGroup');
+            if (bulkGroup) {
+                bulkGroup.style.display = 'block';
+                const check = document.getElementById('bulkAssignCheck');
+                check.checked = false; // Reset
+
+                // Add listener to re-populate on change
+                check.onchange = () => populateAssigneeDropdown();
+            }
+
             populateAssigneeDropdown();
             document.getElementById('assignTaskModal').classList.add('active');
         }
@@ -584,49 +704,77 @@
                 const assigneeId = document.getElementById('taskAssignee').value;
                 const priority = document.getElementById('taskPriority').value;
                 const dueDate = document.getElementById('taskDueDate').value;
+                const isBulk = document.getElementById('bulkAssignCheck').checked;
 
-                if (!assigneeId) throw new Error("Please select an employee.");
+                if (!assigneeId) throw new Error("Please select an employee or team.");
 
-                const assignee = allUsers.find(u => u.id === assigneeId);
+                const tasksToCreate = [];
 
-                if (!assignee) throw new Error("Selected employee not found in local data.");
+                if (isBulk && assigneeId.startsWith('team_')) {
+                    const teamName = assigneeId.replace('team_', '');
+                    const members = allUsers.filter(u => u.team === teamName);
 
-                const taskData = {
-                    title, description: desc, assigneeId, assigneeName: assignee.name,
-                    priority, dueDate,
-                    team: assignee.team || 'No Team', // Ensure Team scope is set
-                    assigneeRole: assignee.role || 'employee',
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    // Update 'From' to current user (the one reassigning/updating)
-                    assignedBy: currentUser.uid,
-                    assignedByName: currentUser.name
-                };
+                    if (members.length === 0) throw new Error(`No members found in ${teamName} team.`);
 
-                // Prepare History Event
-                const historyEvent = {
-                    action: editingTaskId ? 'reassigned' : 'created',
-                    by: currentUser.name,
-                    date: new Date().toISOString(),
-                    details: editingTaskId ? `Reassigned to ${assignee.name}` : `Assigned to ${assignee.name}`
-                };
-
-                if (editingTaskId) {
-                    // UPDATE EXISTING
-                    taskData.history = firebase.firestore.FieldValue.arrayUnion(historyEvent);
-                    await db.collection('tasks').doc(editingTaskId).update(taskData);
-                    alert('Task updated successfully!');
+                    members.forEach(m => {
+                        tasksToCreate.push({
+                            title, description: desc, assigneeId: m.id, assigneeName: m.name,
+                            priority, dueDate, team: m.team,
+                            assigneeRole: m.role || 'employee',
+                            status: 'pending',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            assignedBy: currentUser.uid,
+                            assignedByName: currentUser.name,
+                            history: [{
+                                action: 'created', by: currentUser.name,
+                                date: new Date().toISOString(),
+                                details: `Bulk assigned to ${teamName} team`
+                            }]
+                        });
+                    });
                 } else {
-                    // CREATE NEW
-                    taskData.status = 'pending';
-                    taskData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    taskData.history = [historyEvent];
+                    const assignee = allUsers.find(u => u.id === assigneeId);
+                    if (!assignee) throw new Error("Selected employee not found.");
 
-                    await db.collection('tasks').add(taskData);
-                    alert('Task assigned successfully!');
+                    const taskData = {
+                        title, description: desc, assigneeId, assigneeName: assignee.name,
+                        priority, dueDate, team: assignee.team || 'No Team',
+                        assigneeRole: assignee.role || 'employee',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        assignedBy: currentUser.uid,
+                        assignedByName: currentUser.name
+                    };
+
+                    const historyEvent = {
+                        action: editingTaskId ? 'reassigned' : 'created',
+                        by: currentUser.name,
+                        date: new Date().toISOString(),
+                        details: editingTaskId ? `Reassigned to ${assignee.name}` : `Assigned to ${assignee.name}`
+                    };
+
+                    if (editingTaskId) {
+                        taskData.history = firebase.firestore.FieldValue.arrayUnion(historyEvent);
+                        await db.collection('tasks').doc(editingTaskId).update(taskData);
+                    } else {
+                        taskData.status = 'pending';
+                        taskData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                        taskData.history = [historyEvent];
+                        tasksToCreate.push(taskData);
+                    }
                 }
 
-                // Duplicate block removed here
+                // Batch upload for new tasks
+                if (tasksToCreate.length > 0) {
+                    const batch = db.batch();
+                    tasksToCreate.forEach(t => {
+                        const newRef = db.collection('tasks').doc();
+                        batch.set(newRef, t);
+                    });
+                    await batch.commit();
+                }
 
+                alert(editingTaskId ? 'Task updated!' : `Successfully assigned ${tasksToCreate.length} task(s).`);
                 closeAssignTaskModal();
             } catch (error) {
                 console.error("Assign error:", error);
@@ -950,28 +1098,30 @@
                 if (s.total === 0 && team === 'No Team') return ''; // Skip empty "No Team"
 
                 return `
-                    <div class="team-stat-card">
+                    <div class="team-stat-card" onclick="openTeamTasksModal('${team}', 'all')">
                         <div class="team-name-label">${team}</div>
-                        <div class="team-stats-grid">
-                            <div class="team-sub-stat" onclick="openTeamTasksModal('${team}', 'all')" title="View All Tasks">
-                                <div class="team-sub-stat-value">${s.total}</div>
-                                <div class="team-sub-stat-label">Total</div>
+
+                        <div class="team-labels-row">
+                            <span class="team-stat-label-faint">Total</span>
+                            <span class="team-stat-label-faint">Pending</span>
+                            <span class="team-stat-label-faint">Ongoing</span>
+                        </div>
+
+                        <div class="team-labels-row" style="margin-bottom: 20px; font-weight: 800; font-size: 16px;">
+                            <span>${s.total}</span>
+                            <span>${s.pending}</span>
+                            <span>${s.in_progress}</span>
+                        </div>
+
+                        <div class="team-overdue-container">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <span class="team-stat-label-faint">Done</span>
+                                <span style="font-weight: 800; font-size: 18px;">${s.completed}</span>
                             </div>
-                            <div class="team-sub-stat" onclick="openTeamTasksModal('${team}', 'pending')" title="View Pending Tasks">
-                                <div class="team-sub-stat-value">${s.pending}</div>
-                                <div class="team-sub-stat-label">Pending</div>
-                            </div>
-                            <div class="team-sub-stat" onclick="openTeamTasksModal('${team}', 'in_progress')" title="View Ongoing Tasks">
-                                <div class="team-sub-stat-value">${s.in_progress}</div>
-                                <div class="team-sub-stat-label">Ongoing</div>
-                            </div>
-                            <div class="team-sub-stat" onclick="openTeamTasksModal('${team}', 'completed')" title="View Completed Tasks">
-                                <div class="team-sub-stat-value">${s.completed}</div>
-                                <div class="team-sub-stat-label">Done</div>
-                            </div>
-                            <div class="team-sub-stat" onclick="openTeamTasksModal('${team}', 'overdue')" title="View Overdue Tasks" style="color:#ef4444; background:#fef2f2;">
-                                <div class="team-sub-stat-value">${s.overdue}</div>
-                                <div class="team-sub-stat-label">Overdue</div>
+
+                            <div class="overdue-box" onclick="event.stopPropagation(); openTeamTasksModal('${team}', 'overdue')">
+                                <div class="overdue-count">${s.overdue}</div>
+                                <div class="overdue-label-text">Overdue</div>
                             </div>
                         </div>
                     </div>
@@ -1400,6 +1550,8 @@
 
             // OVERDUE CHECK
             let isOverdue = false;
+            const relativeDate = getRelativeDueDate(task.dueDate);
+
             // Simple string comparison for YYYY-MM-DD works
             if (task.dueDate && task.status !== 'completed') {
                 const today = new Date().toISOString().split('T')[0];
@@ -1409,7 +1561,8 @@
             }
 
             const cardStyle = isOverdue ? 'border: 2px solid #ef4444; background-color: #fef2f2;' : '';
-            const overdueBadge = isOverdue ? '<div style="background:#ef4444; color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">⚠️ OVERDUE</div>' : '';
+            const overdueBadge = isOverdue ? `<div style="background:#ef4444; color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">⚠️ ${relativeDate.toUpperCase()}</div>` : '';
+            const upcomingBadge = (!isOverdue && task.dueDate && task.status !== 'completed') ? `<div style="background:var(--primary-color); color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">📅 ${relativeDate}</div>` : '';
 
             let statusAction = '';
             // Assignee or Admin can change Status
@@ -1455,6 +1608,7 @@
             return `
     <div class="task-card" style="${cardStyle}">
         ${overdueBadge}
+            ${upcomingBadge}
         <div class="task-header">
             <span class="task-priority ${task.priority}">${task.priority}</span>
             <span class="task-status ${task.status}">${task.status.replace('_', ' ')}</span>
@@ -1463,7 +1617,7 @@
         <div class="task-desc">${task.description || 'No description'}</div>
         <div class="task-meta">
             <span>${isAdminView ? 'To: ' + task.assigneeName : 'From: ' + (task.assignedByName || 'Admin')}</span>
-            <span>📅 ${task.dueDate || 'No Date'}</span>
+            <span>${task.status === 'completed' ? '✅ Finished' : (task.dueDate ? relativeDate : 'No Date')}</span>
         </div>
         <!-- Note Section Removed -->
         <div class="task-actions" style="display:flex; align-items:center;">
@@ -2450,6 +2604,198 @@ function openNotificationHistory() {
 
             } catch (error) {
                 console.error("Error marking read:", error);
+            }
+        }
+
+        function checkUserDeadlines() {
+            if (!currentUser) return;
+            const tasks = window.globalTasks || [];
+            const today = new Date().toISOString().split('T')[0];
+
+            const urgentTasks = tasks.filter(t =>
+                t.assigneeId === currentUser.uid &&
+                t.status !== 'completed' &&
+                t.dueDate &&
+                t.dueDate <= today
+            );
+
+            if (urgentTasks.length > 0) {
+                const overdueCount = urgentTasks.filter(t => t.dueDate < today).length;
+                const dueTodayCount = urgentTasks.filter(t => t.dueDate === today).length;
+
+                let msg = "📅 Quick Update: ";
+                if (overdueCount > 0) msg += `You have ${overdueCount} overdue task(s). `;
+                if (dueTodayCount > 0) msg += `${dueTodayCount} task(s) are due today. `;
+                msg += "Check your dashboard for details.";
+
+                showToast(msg, overdueCount > 0 ? 'error' : 'info');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // ========== ANNOUNCEMENT FUNCTIONS ==========
+        function subscribeToAnnouncements() {
+            db.collection('announcements').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                const announcements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAnnouncements(announcements);
+                renderActiveAnnouncementsList(announcements); // For management modal
+            });
+        }
+
+        function renderAnnouncements(announcements) {
+            const banner = document.getElementById('announcementBanner');
+            const dashBanner = document.getElementById('dashboardAnnouncementBanner');
+            if (announcements.length === 0) {
+                banner.style.display = 'none';
+                dashBanner.style.display = 'none';
+                return;
+            }
+
+            const html = announcements.map(a => `
+                <div class="announcement-item" style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px; color: var(--announce-text); font-weight: 600; font-size: 14px;">
+                    <span>📢</span>
+                    <span>${a.text}</span>
+                    <span style="font-size: 11px; opacity: 0.7;">(${a.author})</span>
+                </div>
+            `).join('');
+
+            banner.innerHTML = html;
+            banner.style.display = 'block';
+            dashBanner.innerHTML = html;
+            dashBanner.style.display = 'block';
+        }
+
+        function openAnnounceManagement() {
+            document.getElementById('announceModal').classList.add('active');
+        }
+
+        function closeAnnounceModal() {
+            document.getElementById('announceModal').classList.remove('active');
+        }
+
+        async function handlePostAnnouncement(e) {
+            e.preventDefault();
+            const text = document.getElementById('announceText').value.trim();
+            if (!text) return;
+
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = '⏳ Posting...';
+
+            try {
+                await db.collection('announcements').add({
+                    text: text,
+                    author: currentUser.name,
+                    authorId: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                document.getElementById('announceForm').reset();
+                showToast('Announcement posted successfully!', 'success');
+            } catch (error) {
+                console.error("Error posting announcement:", error);
+                alert("Failed to post: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Post Announcement';
+            }
+        }
+
+        function renderActiveAnnouncementsList(announcements) {
+            const list = document.getElementById('activeAnnounceList');
+            if (!list) return;
+
+            if (announcements.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">No active announcements.</p>';
+                return;
+            }
+
+            list.innerHTML = announcements.map(a => `
+                <div class="notification-item" style="padding: 15px; margin-bottom: 10px;">
+                    <div style="font-size: 14px; color: var(--text-primary); margin-bottom: 8px;">${a.text}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: var(--text-secondary);">${a.author}</span>
+                        <button onclick="deleteAnnouncement('${a.id}')" style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer; font-weight:600;">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getRelativeDueDate(dueDate) {
+            if (!dueDate) return '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dueDate);
+            due.setHours(0, 0, 0, 0);
+
+            const diffTime = due - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return "Due Today";
+            if (diffDays === 1) return "Due Tomorrow";
+            if (diffDays === -1) return "Overdue by 1 day";
+            if (diffDays < 0) return `Overdue by ${Math.abs(diffDays)} days`;
+            if (diffDays < 7) return `Due in ${diffDays} days`;
+
+            return `Due: ${dueDate}`;
+        }
+
+        async function downloadAttendanceExcel() {
+            if (!currentEmployee) return;
+            const id = currentEmployee.id;
+            const name = currentEmployee.name;
+
+            // Use already filtered records shown in table if we want consistency,
+            // or re-filter based on current dashboard filters. Let's re-filter for accuracy.
+            let records = employeeData.filter(e => e.id == id);
+            const view = document.getElementById('dashboardViewType').value;
+            const y = document.getElementById('dashboardYearFilter').value;
+            const m = document.getElementById('dashboardMonthFilter').value;
+            const d = document.getElementById('dashboardDayFilter').value;
+
+            if (view === 'year') {
+                if (y) records = records.filter(e => e.date.startsWith(y));
+            } else if (view === 'month') {
+                if (y && m) records = records.filter(e => e.date.startsWith(`${y}-${m}`));
+                else if (y) records = records.filter(e => e.date.startsWith(y));
+            } else if (view === 'day') {
+                if (d) records = records.filter(e => e.date === d);
+            }
+
+            if (records.length === 0) {
+                alert("No attendance records found for the selected period.");
+                return;
+            }
+
+            const fileName = `attendance_${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            const data = records.map(r => ({
+                "Date": r.date,
+                "Clock In": r.clockIn,
+                "Clock Out": r.clockOut,
+                "Total Hours": r.totalHours
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+            XLSX.writeFile(workbook, fileName);
+            showToast('Attendance exported successfully!', 'success');
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm("Are you sure you want to delete this announcement?")) return;
+            try {
+                await db.collection('announcements').doc(id).delete();
+                showToast('Announcement deleted.', 'info');
+            } catch (error) {
+                console.error("Error deleting:", error);
+                alert("Failed to delete.");
             }
         }
 

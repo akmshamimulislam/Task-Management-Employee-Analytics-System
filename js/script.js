@@ -22,6 +22,11 @@
         let editingTaskId = null;
         let dashboardTaskFilter = 'all'; // NEW: Track dashboard task filter
 
+        // Check and apply theme on load
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
         const LEAVE_QUOTAS = {
             'Annual Leave': 15,
             'Casual Leave': 10,
@@ -192,6 +197,7 @@
 
                         // Initialize Task Management
                         subscribeToTasks();
+                        subscribeToAnnouncements();
                         // Load all users for everyone to support Team Lead badges in UI
                         loadAllUsers();
                     } else {
@@ -241,6 +247,7 @@
             document.getElementById('headerNotificationBtn').style.display = 'block'; // Always show
             document.getElementById('adminTaskBtn').style.display = (isAdmin || isTeamLeader) ? 'block' : 'none';
             document.getElementById('adminUsersBtn').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('adminAnnounceBtn').style.display = (isAdmin || isTeamLeader) ? 'block' : 'none';
             document.getElementById('adminTeamSummary').style.display = (isAdmin || isTeamLeader) ? 'block' : 'none'; // Show for Admin/TL
             document.getElementById('dashboardTaskStats').style.display = isAdmin ? 'grid' : 'none'; // NEW: Admin only
         }
@@ -1400,6 +1407,8 @@
 
             // OVERDUE CHECK
             let isOverdue = false;
+            const relativeDate = getRelativeDueDate(task.dueDate);
+
             // Simple string comparison for YYYY-MM-DD works
             if (task.dueDate && task.status !== 'completed') {
                 const today = new Date().toISOString().split('T')[0];
@@ -1409,7 +1418,8 @@
             }
 
             const cardStyle = isOverdue ? 'border: 2px solid #ef4444; background-color: #fef2f2;' : '';
-            const overdueBadge = isOverdue ? '<div style="background:#ef4444; color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">⚠️ OVERDUE</div>' : '';
+            const overdueBadge = isOverdue ? `<div style="background:#ef4444; color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">⚠️ ${relativeDate.toUpperCase()}</div>` : '';
+            const upcomingBadge = (!isOverdue && task.dueDate && task.status !== 'completed') ? `<div style="background:var(--primary-color); color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">📅 ${relativeDate}</div>` : '';
 
             let statusAction = '';
             // Assignee or Admin can change Status
@@ -1455,6 +1465,7 @@
             return `
     <div class="task-card" style="${cardStyle}">
         ${overdueBadge}
+            ${upcomingBadge}
         <div class="task-header">
             <span class="task-priority ${task.priority}">${task.priority}</span>
             <span class="task-status ${task.status}">${task.status.replace('_', ' ')}</span>
@@ -1463,7 +1474,7 @@
         <div class="task-desc">${task.description || 'No description'}</div>
         <div class="task-meta">
             <span>${isAdminView ? 'To: ' + task.assigneeName : 'From: ' + (task.assignedByName || 'Admin')}</span>
-            <span>📅 ${task.dueDate || 'No Date'}</span>
+            <span>${task.status === 'completed' ? '✅ Finished' : (task.dueDate ? relativeDate : 'No Date')}</span>
         </div>
         <!-- Note Section Removed -->
         <div class="task-actions" style="display:flex; align-items:center;">
@@ -2450,6 +2461,173 @@ function openNotificationHistory() {
 
             } catch (error) {
                 console.error("Error marking read:", error);
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // ========== ANNOUNCEMENT FUNCTIONS ==========
+        function subscribeToAnnouncements() {
+            db.collection('announcements').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                const announcements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAnnouncements(announcements);
+                renderActiveAnnouncementsList(announcements); // For management modal
+            });
+        }
+
+        function renderAnnouncements(announcements) {
+            const banner = document.getElementById('announcementBanner');
+            const dashBanner = document.getElementById('dashboardAnnouncementBanner');
+            if (announcements.length === 0) {
+                banner.style.display = 'none';
+                dashBanner.style.display = 'none';
+                return;
+            }
+
+            const html = announcements.map(a => `
+                <div class="announcement-item" style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px; color: var(--announce-text); font-weight: 600; font-size: 14px;">
+                    <span>📢</span>
+                    <span>${a.text}</span>
+                    <span style="font-size: 11px; opacity: 0.7;">(${a.author})</span>
+                </div>
+            `).join('');
+
+            banner.innerHTML = html;
+            banner.style.display = 'block';
+            dashBanner.innerHTML = html;
+            dashBanner.style.display = 'block';
+        }
+
+        function openAnnounceManagement() {
+            document.getElementById('announceModal').classList.add('active');
+        }
+
+        function closeAnnounceModal() {
+            document.getElementById('announceModal').classList.remove('active');
+        }
+
+        async function handlePostAnnouncement(e) {
+            e.preventDefault();
+            const text = document.getElementById('announceText').value.trim();
+            if (!text) return;
+
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = '⏳ Posting...';
+
+            try {
+                await db.collection('announcements').add({
+                    text: text,
+                    author: currentUser.name,
+                    authorId: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                document.getElementById('announceForm').reset();
+                showToast('Announcement posted successfully!', 'success');
+            } catch (error) {
+                console.error("Error posting announcement:", error);
+                alert("Failed to post: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Post Announcement';
+            }
+        }
+
+        function renderActiveAnnouncementsList(announcements) {
+            const list = document.getElementById('activeAnnounceList');
+            if (!list) return;
+
+            if (announcements.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">No active announcements.</p>';
+                return;
+            }
+
+            list.innerHTML = announcements.map(a => `
+                <div class="notification-item" style="padding: 15px; margin-bottom: 10px;">
+                    <div style="font-size: 14px; color: var(--text-primary); margin-bottom: 8px;">${a.text}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: var(--text-secondary);">${a.author}</span>
+                        <button onclick="deleteAnnouncement('${a.id}')" style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer; font-weight:600;">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getRelativeDueDate(dueDate) {
+            if (!dueDate) return '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dueDate);
+            due.setHours(0, 0, 0, 0);
+
+            const diffTime = due - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return "Due Today";
+            if (diffDays === 1) return "Due Tomorrow";
+            if (diffDays === -1) return "Overdue by 1 day";
+            if (diffDays < 0) return `Overdue by ${Math.abs(diffDays)} days`;
+            if (diffDays < 7) return `Due in ${diffDays} days`;
+
+            return `Due: ${dueDate}`;
+        }
+
+        async function downloadAttendanceExcel() {
+            if (!currentEmployee) return;
+            const id = currentEmployee.id;
+            const name = currentEmployee.name;
+
+            // Use already filtered records shown in table if we want consistency,
+            // or re-filter based on current dashboard filters. Let's re-filter for accuracy.
+            let records = employeeData.filter(e => e.id == id);
+            const view = document.getElementById('dashboardViewType').value;
+            const y = document.getElementById('dashboardYearFilter').value;
+            const m = document.getElementById('dashboardMonthFilter').value;
+            const d = document.getElementById('dashboardDayFilter').value;
+
+            if (view === 'year') {
+                if (y) records = records.filter(e => e.date.startsWith(y));
+            } else if (view === 'month') {
+                if (y && m) records = records.filter(e => e.date.startsWith(`${y}-${m}`));
+                else if (y) records = records.filter(e => e.date.startsWith(y));
+            } else if (view === 'day') {
+                if (d) records = records.filter(e => e.date === d);
+            }
+
+            if (records.length === 0) {
+                alert("No attendance records found for the selected period.");
+                return;
+            }
+
+            const fileName = `attendance_${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            const data = records.map(r => ({
+                "Date": r.date,
+                "Clock In": r.clockIn,
+                "Clock Out": r.clockOut,
+                "Total Hours": r.totalHours
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+            XLSX.writeFile(workbook, fileName);
+            showToast('Attendance exported successfully!', 'success');
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm("Are you sure you want to delete this announcement?")) return;
+            try {
+                await db.collection('announcements').doc(id).delete();
+                showToast('Announcement deleted.', 'info');
+            } catch (error) {
+                console.error("Error deleting:", error);
+                alert("Failed to delete.");
             }
         }
 

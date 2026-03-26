@@ -1,3 +1,55 @@
+:root {
+    --primary-color: #354894;
+    --accent-color: #CF278D;
+    --bg-color: #354894;
+    --container-bg: white;
+    --card-bg: white;
+    --text-primary: #2d3748;
+    --text-secondary: #6c757d;
+    --text-muted: #94a3b8;
+    --text-white: white;
+    --border-color: #e9ecef;
+    --header-bg: #354894;
+    --status-success-bg: #dcfce7;
+    --status-success-text: #16a34a;
+    --status-warning-bg: #fef3c7;
+    --status-warning-text: #d97706;
+    --status-error-bg: #fee2e2;
+    --status-error-text: #dc2626;
+    --input-bg: white;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --hover-bg: #f8f9fa;
+    --announce-bg: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%);
+    --announce-border: #fbd38d;
+    --announce-text: #854d0e;
+}
+
+.dark-mode {
+    --primary-color: #5c6bc0;
+    --accent-color: #ec407a;
+    --bg-color: #0f172a;
+    --container-bg: #1e293b;
+    --card-bg: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-white: #f8fafc;
+    --border-color: #475569;
+    --header-bg: #1e293b;
+    --status-success-bg: #064e3b;
+    --status-success-text: #4ade80;
+    --status-warning-bg: #78350f;
+    --status-warning-text: #fbbf24;
+    --status-error-bg: #7f1d1d;
+    --status-error-text: #f87171;
+    --input-bg: #334155;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --hover-bg: #334155;
+    --announce-bg: linear-gradient(135deg, #78350f 0%, #451a03 100%);
+    --announce-border: #92400e;
+    --announce-text: #fef3c7;
+}
+
 * {
             margin: 0;
             padding: 0;
@@ -6,24 +58,26 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #354894;
+    background: var(--bg-color);
+    color: var(--text-primary);
             min-height: 100vh;
             padding: 20px;
+    transition: background-color 0.3s, color 0.3s;
         }
 
         /* Auth Styles */
         .auth-container {
             max-width: 450px;
             margin: 50px auto;
-            background: white;
+            background: var(--container-bg);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px var(--shadow-color);
             overflow: hidden;
         }
 
         .auth-header {
-            background: linear-gradient(135deg, #354894 0%, #CF278D 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: var(--text-white);
             padding: 40px 30px;
             text-align: center;
         }
@@ -55,7 +109,7 @@
             background: none;
             border: none;
             border-bottom: 3px solid transparent;
-            color: #6c757d;
+            color: var(--text-secondary);
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -63,8 +117,8 @@
         }
 
         .auth-tab.active {
-            color: #354894;
-            border-bottom-color: #CF278D;
+            color: var(--primary-color);
+            border-bottom-color: var(--accent-color);
         }
 
         .auth-form {
@@ -83,7 +137,7 @@
             display: block;
             font-size: 14px;
             font-weight: 600;
-            color: #2d3748;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }
 
@@ -91,8 +145,10 @@
         .form-select {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
             font-size: 14px;
             transition: all 0.3s;
         }
@@ -100,15 +156,15 @@
         .form-input:focus,
         .form-select:focus {
             outline: none;
-            border-color: #354894;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(53, 72, 148, 0.1);
         }
 
         .auth-button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #354894 0%, #CF278D 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: var(--text-white);
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -133,7 +189,7 @@
             display: block;
             text-align: right;
             margin-top: 10px;
-            color: #354894;
+            color: var(--primary-color);
             font-size: 14px;
             text-decoration: none;
             cursor: pointer;
@@ -171,9 +227,9 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: var(--container-bg);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 40px var(--shadow-color);
             overflow: hidden;
             display: none;
         }
@@ -183,8 +239,8 @@
         }
 
         .header {
-            background: #354894;
-            color: white;
+            background: var(--header-bg);
+            color: var(--text-white);
             padding: 30px;
             text-align: center;
             position: relative;
@@ -212,14 +268,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-white);
         }
 
         .user-avatar-small {
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: white;
-            color: #354894;
+            background: var(--container-bg);
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -296,8 +353,8 @@
 
         .status-section {
             padding: 20px 30px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
+            background: var(--hover-bg);
+            border-bottom: 2px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -317,24 +374,24 @@
         }
 
         .status-badge.success {
-            background: #dcfce7;
-            color: #16a34a;
+            background: var(--status-success-bg);
+            color: var(--status-success-text);
         }
 
         .status-badge.loading {
-            background: #fef3c7;
-            color: #d97706;
+            background: var(--status-warning-bg);
+            color: var(--status-warning-text);
         }
 
         .status-badge.error {
-            background: #fee2e2;
-            color: #dc2626;
+            background: var(--status-error-bg);
+            color: var(--status-error-text);
         }
 
         .refresh-button {
             padding: 10px 20px;
-            background: #CF278D;
-            color: white;
+            background: var(--accent-color);
+            color: var(--text-white);
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -355,8 +412,8 @@
 
         .filter-section {
             padding: 20px 30px;
-            background: white;
-            border-bottom: 2px solid #e9ecef;
+            background: var(--container-bg);
+            border-bottom: 2px solid var(--border-color);
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
@@ -371,21 +428,23 @@
 
         .filter-label {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
             font-weight: 600;
             text-transform: uppercase;
         }
 
         .search-section {
             padding: 20px 30px;
-            background: white;
+            background: var(--container-bg);
         }
 
         .search-box {
             width: 100%;
             padding: 15px;
             font-size: 16px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
             border-radius: 8px;
             transition: all 0.3s;
         }
@@ -398,12 +457,12 @@
         }
 
         .profile-card {
-            background: white;
-            border: 2px solid #e9ecef;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             padding: 25px;
             transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px var(--shadow-color);
             cursor: pointer;
         }
 
@@ -448,7 +507,7 @@
         .employee-name {
             font-size: 20px;
             font-weight: bold;
-            color: #2d3748;
+            color: var(--text-primary);
             margin-top: 5px;
         }
 
@@ -460,7 +519,7 @@
         }
 
         .time-item {
-            background: #f8f9fa;
+            background: var(--hover-bg);
             padding: 12px;
             border-radius: 8px;
         }
@@ -476,12 +535,12 @@
         .time-value {
             font-size: 18px;
             font-weight: bold;
-            color: #2d3748;
+            color: var(--text-primary);
         }
 
         .total-hours {
-            background: #CF278D;
-            color: white;
+            background: var(--accent-color);
+            color: var(--text-white);
             padding: 15px;
             border-radius: 8px;
             text-align: center;
@@ -508,7 +567,7 @@
         }
 
         .leave-balance-section {
-            background: #f8f9fa;
+            background: var(--hover-bg);
             padding: 15px;
             border-radius: 8px;
             margin-top: 15px;
@@ -517,7 +576,7 @@
         .leave-balance-title {
             font-size: 14px;
             font-weight: 600;
-            color: #2d3748;
+            color: var(--text-primary);
             margin-bottom: 10px;
             text-align: center;
         }
@@ -529,10 +588,10 @@
         }
 
         .leave-item {
-            background: white;
+            background: var(--card-bg);
             padding: 8px;
             border-radius: 6px;
-            border: 1px solid #e9ecef;
+            border: 1px solid var(--border-color);
         }
 
         .leave-type {
@@ -605,10 +664,10 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px var(--shadow-color);
             text-align: center;
         }
 
@@ -636,14 +695,14 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-            background: white;
+            background: var(--container-bg);
         }
 
         .leave-stat-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             transition: all 0.3s;
         }
 
@@ -705,20 +764,20 @@
 
         .leave-history-section {
             padding: 30px;
-            background: white;
+            background: var(--container-bg);
         }
 
         .leave-history-title {
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #2d3748;
+            color: var(--text-primary);
         }
 
         .leave-history-table {
             overflow-x: auto;
             border-radius: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
         }
 
         .attendance-table {
@@ -728,25 +787,26 @@
         .table-container {
             overflow-x: auto;
             border-radius: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: var(--container-bg);
         }
 
         thead {
-            background: #354894;
-            color: white;
+            background: var(--header-bg);
+            color: var(--text-white);
         }
 
         th,
         td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
         }
 
         th {
@@ -756,7 +816,7 @@
         }
 
         tbody tr:hover {
-            background: #f8f9fa;
+            background: var(--hover-bg);
         }
 
         .leave-badge {
@@ -945,14 +1005,14 @@
         }
 
         .notification-content {
-            background: white;
+            background: var(--container-bg);
             border-radius: 20px;
             padding: 30px;
             max-width: 500px;
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px var(--shadow-color);
         }
 
         .notification-header {
@@ -961,7 +1021,7 @@
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .notification-header h2 {
@@ -997,11 +1057,11 @@
         }
 
         .notification-item {
-            background: white;
+            background: var(--card-bg);
             padding: 24px;
             border-radius: 16px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
             transition: transform 0.2s;
         }
 
@@ -1120,10 +1180,10 @@
         }
 
         .modal .notification-content {
-            background: white;
+            background: var(--container-bg);
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px var(--shadow-color);
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
@@ -1151,15 +1211,15 @@
 
         .task-section {
             padding: 30px;
-            background: white;
-            border-top: 2px solid #e9ecef;
+            background: var(--container-bg);
+            border-top: 2px solid var(--border-color);
         }
 
         .section-title {
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #2d3748;
+            color: var(--text-primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1172,8 +1232,8 @@
         }
 
         .task-card {
-            background: white;
-            border: 2px solid #e9ecef;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
             transition: all 0.3s;
@@ -1182,8 +1242,8 @@
 
         .task-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-color: #354894;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            border-color: var(--primary-color);
         }
 
         .task-header {
@@ -1241,7 +1301,7 @@
         .task-title {
             font-size: 16px;
             font-weight: bold;
-            color: #2d3748;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }
 
@@ -1277,24 +1337,24 @@
         }
 
         .team-stat-card {
-            background: white;
+            background: var(--card-bg);
             padding: 18px;
             border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             transition: all 0.2s;
         }
 
         .team-stat-card:hover {
-            border-color: #354894;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
         }
 
         .team-name-label {
             font-size: 15px;
             font-weight: 800;
-            color: #1e293b;
+            color: var(--text-primary);
             margin-bottom: 12px;
             text-align: center;
         }
@@ -1313,17 +1373,17 @@
             justify-content: center;
             padding: 8px 4px;
             border-radius: 8px;
-            background: #f8fafc;
+            background: var(--hover-bg);
             border: 1px solid transparent;
             cursor: pointer;
             transition: all 0.15s ease;
         }
 
         .team-sub-stat:hover {
-            background: white;
-            border-color: #cbd5e1;
+            background: var(--card-bg);
+            border-color: var(--border-color);
             transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
 
         .team-sub-stat-value {
@@ -1353,8 +1413,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            background: #fff;
-            border-bottom: 2px solid #f1f5f9;
+            background: var(--container-bg);
+            border-bottom: 2px solid var(--border-color);
         }
 
         .task-stat-card {
@@ -1363,7 +1423,8 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
             transition: all 0.2s;
             cursor: pointer;
             border: 2px solid transparent;

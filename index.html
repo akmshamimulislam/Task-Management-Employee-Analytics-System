@@ -11,7 +11,10 @@
 
 <body>
     <!-- Auth Screen -->
-    <div id="authContainer" class="auth-container">
+    <div id="authContainer" class="auth-container" style="position: relative;">
+        <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+            <button class="task-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode" style="border-radius: 9999px; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); border: 2px solid white; color: white;">🌓</button>
+        </div>
         <div class="auth-header">
             <h1>🏢 Knowledge Team Dashboard</h1>
             <p>Task Management Portal</p>
@@ -72,6 +75,9 @@
                         Tasks</button>
                     <button class="task-btn" id="adminUsersBtn" onclick="toggleAdminUsers()" style="display: none;">👥
                         Users</button>
+                    <button class="task-btn" id="adminAnnounceBtn" onclick="openAnnounceManagement()" style="display: none;">📢
+                        Announce</button>
+                    <button class="task-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">🌓</button>
                     <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
                 </div>
                 <h1>🏢 Knowledge Team Dashboard</h1>
@@ -131,6 +137,11 @@
 
             <div class="search-section" id="searchSection"> <input type="text" id="searchBox" class="search-box"
                     placeholder="🔍 Search..."> </div>
+
+            <!-- Global Announcement Banner -->
+            <div id="announcementBanner" style="display: none; padding: 15px 30px; background: var(--announce-bg); border-bottom: 2px solid var(--announce-border);">
+                <!-- Dynamic Announcements -->
+            </div>
 
             <!-- Admin Team Summary (NEW POS) -->
             <div id="adminTeamSummary"
@@ -215,6 +226,10 @@
 
         <!-- Dashboard View -->
         <div id="dashboardView" class="dashboard-view">
+            <!-- Dashboard Announcement Banner -->
+            <div id="dashboardAnnouncementBanner" style="display: none; padding: 15px 30px; background: var(--announce-bg); border-bottom: 2px solid var(--announce-border);">
+                <!-- Dynamic Announcements -->
+            </div>
             <div class="header">
                 <button class="back-button" onclick="showListView()">← Back to List</button>
                 <div class="user-info-bar">
@@ -223,7 +238,7 @@
                         <span>Notifications</span>
                         <span class="notification-badge-count" id="notificationCount">0</span>
                     </button>
-
+                    <button class="task-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode" style="border-radius: 9999px; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;">🌓</button>
                     <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
                 </div>
                 <h1>Personal Dashboard</h1>
@@ -541,7 +556,10 @@
             </div>
 
             <div class="attendance-table">
-                <h2>📊 Attendance Records</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0;">📊 Attendance Records</h2>
+                    <button class="refresh-button" style="background-color: #10b981; padding: 8px 15px; font-size: 14px;" onclick="downloadAttendanceExcel()">📥 Export Attendance</button>
+                </div>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -555,6 +573,26 @@
                         <tbody id="attendanceTableBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Management Modal -->
+    <div id="announceModal" class="modal">
+        <div class="notification-content" style="max-width: 500px;">
+            <div class="notification-header">
+                <h2>📢 Manage Announcements</h2> <button class="close-modal-btn" onclick="closeAnnounceModal()">×</button>
+            </div>
+            <form id="announceForm" onsubmit="handlePostAnnouncement(event)" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label">New Announcement</label>
+                    <textarea id="announceText" class="form-input" rows="3" placeholder="Enter announcement text..." required></textarea>
+                </div>
+                <button type="submit" class="auth-button">🚀 Post Announcement</button>
+            </form>
+            <div class="section-title" style="font-size: 16px;"><span>Active Announcements</span></div>
+            <div id="activeAnnounceList" class="notification-list" style="max-height: 300px; overflow-y: auto;">
+                <!-- Dynamic Content -->
             </div>
         </div>
     </div>

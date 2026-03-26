@@ -1,7 +1,7 @@
 {
-    "zk_ip": "192.168.1.201",
-    "zk_port": 4370,
+    "zk_ip": "YOUR_ZK_IP",
+    "zk_port": YOUR_ZK_PORT,
     "google_sheet_id": "YOUR_GOOGLE_SHEET_ID",
-    "google_sheet_name": "Attendance",
+    "google_sheet_name": "YOUR_GOOGLE_SHEET_NAME",
     "google_service_account_file": "credentials.json"
 }

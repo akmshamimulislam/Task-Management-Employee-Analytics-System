@@ -128,6 +128,28 @@ Open index.html in your browser
 
 ---
 
+## 🕒 ZKTeco Attendance Integration (New Feature 🚀)
+
+You can now automatically sync attendance records directly from your ZKTeco biometric device to the Google Sheet dashboard.
+
+### 🛠️ Setup Instructions
+
+1.  **Prerequisites:**
+    *   Python 3.x installed.
+    *   Install dependencies: `pip install pyzk google-auth google-api-python-client google-auth-oauthlib pandas`
+2.  **Configuration:**
+    *   Copy `config.json.template` to `config.json`.
+    *   Enter your ZKTeco device **IP address**.
+    *   Enter your **Google Sheet ID** and **Sheet Name**.
+    *   Provide your **Google Service Account** JSON file (saved as `credentials.json`).
+3.  **Run Sync Script:**
+    ```bash
+    python zkteco_sync.py
+    ```
+    *This will connect to the device, calculate daily total hours, and upload records to your dashboard.*
+
+---
+
 ## ⚙️ Required Configuration (IMPORTANT ⚠️)
 
 Before running this project, you **MUST update the configuration values**, otherwise the system will **NOT work properly**.

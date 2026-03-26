@@ -145,7 +145,7 @@
 
             <!-- Admin Team Summary (NEW POS) -->
             <div id="adminTeamSummary"
-                style="display: none; padding: 20px 30px; background: white; border-bottom: 2px solid #e9ecef;">
+                style="display: none; padding: 20px 30px; background: var(--container-bg); border-bottom: 2px solid var(--border-color);">
                 <div class="section-title"> <span>👥 Team Task Overview</span> </div>
 
                 <!-- NEW: Team Filter Section -->
@@ -198,6 +198,27 @@
             <!-- Admin User Management View -->
             <div id="adminUserView"
                 style="display: none; padding: 20px 30px; background: #fff7ed; border-bottom: 2px solid #fed7aa;">
+
+                <!-- Performance Analytics Section (NEW) -->
+                <div class="section-title"> <span>📊 Performance Analytics</span> <button onclick="renderEmployeePerformance()" class="refresh-button" style="padding:5px 10px; font-size:12px; background-color: #3b82f6;">📈 Calculate Analytics</button> </div>
+                <div style="overflow-x:auto; margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #fed7aa;">
+                    <table style="width:100%; font-size:13px;">
+                        <thead>
+                            <tr style="background: #f8fafc; color: #475569;">
+                                <th>Employee</th>
+                                <th>Total Tasks</th>
+                                <th>Completion %</th>
+                                <th>Overdue</th>
+                                <th>Avg Speed (days)</th>
+                                <th>Performance Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performanceTableBody">
+                            <tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">Click "Calculate Analytics" to load data.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="section-title"> <span>👥 User Management</span> <button onclick="loadUserManagementHelper()"
                         class="refresh-button" style="padding:5px 10px; font-size:12px;">🔄 Refresh List</button> </div>
                 <div style="overflow-x:auto;">
@@ -628,6 +649,12 @@
                 <h2>➕ Assign New Task</h2> <button class="close-modal-btn" onclick="closeAssignTaskModal()">×</button>
             </div>
             <form id="assignTaskForm" onsubmit="handleAssignTask(event)">
+                <div class="form-group" id="bulkAssignGroup" style="display: none; margin-bottom: 15px;">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="bulkAssignCheck" style="width: 18px; height: 18px;">
+                        <span>Assign to whole team?</span>
+                    </label>
+                </div>
                 <div class="form-group"> <label class="form-label">Task Title</label> <input type="text" id="taskTitle"
                         class="form-input" required> </div>
                 <div class="form-group"> <label class="form-label">Description</label> <textarea id="taskDesc"

@@ -1337,69 +1337,80 @@
         }
 
         .team-stat-card {
-            background: var(--card-bg);
-            padding: 18px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.2s;
-        }
-
-        .team-stat-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 10px 15px -3px var(--shadow-color);
-        }
-
-        .team-name-label {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .team-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            width: 100%;
-        }
-
-        .team-sub-stat {
+            background: #334155;
+            color: white;
+            padding: 25px 15px;
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 8px 4px;
-            border-radius: 8px;
-            background: var(--hover-bg);
-            border: 1px solid transparent;
+            transition: all 0.3s;
             cursor: pointer;
-            transition: all 0.15s ease;
+            min-height: 220px;
+            justify-content: space-between;
         }
 
-        .team-sub-stat:hover {
-            background: var(--card-bg);
-            border-color: var(--border-color);
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px var(--shadow-color);
+        .team-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .team-sub-stat-value {
-            font-size: 16px;
+        .team-name-label {
+            font-size: 20px;
             font-weight: 800;
-            line-height: 1.2;
-            color: #334155;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
         }
 
-        .team-sub-stat-label {
-            font-size: 9px;
-            font-weight: 600;
-            color: #64748b;
+        .team-labels-row {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .team-stat-label-faint {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
             text-transform: uppercase;
-            letter-spacing: 0.2px;
-            margin-top: 2px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .team-overdue-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .overdue-box {
+            background: white;
+            color: #1e293b;
+            padding: 12px 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 90px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .overdue-count {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .overdue-label-text {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--status-error-text);
+            text-transform: uppercase;
+            margin-top: 4px;
         }
 
         .team-count-subtext {
